@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GUIBoost — Modern Minecraft Booster Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --purple-50: #f3f0ff;
+    --purple-100: #e9e3ff;
+    --purple-200: #d4c8ff;
+    --purple-300: #b59eff;
+    --purple-400: #9370f8;
+    --purple-500: #7c3aed;
+    --purple-600: #6d28d9;
+    --purple-700: #5b21b6;
+    --purple-800: #4c1d95;
+    --purple-900: #2e1065;
+    --dark-bg: #0d0b14;
+    --dark-card: #13101e;
+    --dark-card2: #1a1628;
+    --dark-border: rgba(124,58,237,0.18);
+    --dark-border2: rgba(124,58,237,0.35);
+    --text-primary: #f0ebff;
+    --text-secondary: #9b8ec4;
+    --text-muted: #5c5280;
+    --green: #22c55e;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --cyan: #06b6d4;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--dark-bg);
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* ── GLOW ORBS ── */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.12;
+  }
+  .orb-1 { width: 600px; height: 600px; background: var(--purple-500); top: -200px; right: -150px; }
+  .orb-2 { width: 500px; height: 500px; background: var(--purple-700); bottom: 20%; left: -200px; }
+  .orb-3 { width: 300px; height: 300px; background: var(--cyan); top: 60%; right: 10%; opacity: 0.06; }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 1; }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(13,11,20,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--dark-border);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px;
+  }
+  .nav-logo {
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px;
+    display: flex; align-items: center; gap: 8px;
+    color: var(--text-primary);
+    text-decoration: none;
+  }
+  .logo-badge {
+    background: var(--purple-500); color: white;
+    font-size: 10px; font-weight: 700; padding: 2px 6px;
+    border-radius: 4px; letter-spacing: 0.05em;
+  }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--text-primary); }
+  .nav-cta {
+    background: var(--purple-500); color: white; border: none;
+    padding: 8px 20px; border-radius: 8px; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+  }
+  .nav-cta:hover { background: var(--purple-400); transform: translateY(-1px); }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 140px 0 80px;
+    text-align: center;
+    position: relative;
+  }
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(124,58,237,0.15); border: 1px solid var(--dark-border2);
+    color: var(--purple-300); padding: 5px 14px; border-radius: 100px;
+    font-size: 13px; font-weight: 500; margin-bottom: 24px;
+  }
+  .hero-tag::before { content: '●'; font-size: 8px; color: var(--green); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .hero h1 {
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(42px,6vw,76px);
+    line-height: 1.05; margin-bottom: 20px; letter-spacing: -0.02em;
+  }
+  .hero h1 span { color: var(--purple-400); }
+  .hero-sub {
+    font-size: 18px; color: var(--text-secondary); max-width: 540px;
+    margin: 0 auto 40px; line-height: 1.7;
+  }
+  .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn-primary {
+    background: var(--purple-500); color: white; border: none;
+    padding: 14px 32px; border-radius: 10px; font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-primary:hover { background: var(--purple-400); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(124,58,237,0.4); }
+  .btn-secondary {
+    background: transparent; color: var(--text-primary);
+    border: 1px solid var(--dark-border2);
+    padding: 14px 32px; border-radius: 10px; font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-secondary:hover { background: rgba(124,58,237,0.1); border-color: var(--purple-400); }
+
+  /* ── STAT BAR ── */
+  .stat-bar {
+    display: grid; grid-template-columns: repeat(4,1fr); gap: 1px;
+    background: var(--dark-border);
+    border: 1px solid var(--dark-border);
+    border-radius: 14px; overflow: hidden; margin: 60px 0;
+  }
+  .stat-item {
+    background: var(--dark-card); padding: 24px;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 32px;
+    color: var(--purple-300); display: block;
+  }
+  .stat-lbl { color: var(--text-muted); font-size: 13px; margin-top: 2px; }
+
+  /* ── SECTION ── */
+  section { padding: 80px 0; }
+  .section-tag {
+    display: inline-block;
+    background: rgba(124,58,237,0.12); border: 1px solid var(--dark-border2);
+    color: var(--purple-300); padding: 4px 12px; border-radius: 6px;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(28px,4vw,42px);
+    line-height: 1.15; margin-bottom: 12px; letter-spacing: -0.01em;
+  }
+  .section-title span { color: var(--purple-400); }
+  .section-sub { color: var(--text-secondary); max-width: 560px; font-size: 16px; line-height: 1.7; }
+
+  /* ── FEATURE GRID ── */
+  .feature-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-top: 48px; }
+  .feature-card {
+    background: var(--dark-card);
+    border: 1px solid var(--dark-border);
+    border-radius: 16px; padding: 28px;
+    transition: all 0.25s;
+    position: relative; overflow: hidden;
+  }
+  .feature-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--purple-500), transparent);
+    opacity: 0; transition: opacity 0.25s;
+  }
+  .feature-card:hover { border-color: var(--dark-border2); transform: translateY(-3px); }
+  .feature-card:hover::before { opacity: 1; }
+  .feature-icon {
+    width: 44px; height: 44px; border-radius: 10px;
+    background: rgba(124,58,237,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; margin-bottom: 16px;
+    border: 1px solid var(--dark-border2);
+  }
+  .feature-card h3 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; margin-bottom: 8px; }
+  .feature-card p { color: var(--text-secondary); font-size: 14px; line-height: 1.6; }
+  .feature-card .badge {
+    display: inline-block; font-size: 10px; font-weight: 700;
+    padding: 2px 7px; border-radius: 4px; margin-bottom: 10px; letter-spacing: 0.06em;
+  }
+  .badge-new { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+  .badge-pro { background: rgba(124,58,237,0.2); color: var(--purple-300); border: 1px solid var(--dark-border2); }
+
+  /* ── HIGHLIGHT WIDE CARDS ── */
+  .feature-wide { grid-column: span 2; }
+
+  /* ── BOSSBAR PREVIEW ── */
+  .bossbar-demo {
+    margin-top: 48px;
+    background: var(--dark-card); border: 1px solid var(--dark-border);
+    border-radius: 16px; padding: 32px;
+  }
+  .mc-bossbar {
+    background: rgba(0,0,0,0.7); border: 2px solid rgba(124,58,237,0.5);
+    border-radius: 6px; padding: 8px 16px; text-align: center;
+    font-family: 'Space Mono', monospace; font-size: 13px;
+    color: #e0d4ff; margin: 0 auto; max-width: 500px;
+    position: relative;
+  }
+  .mc-bossbar-bar {
+    height: 8px; background: #1a1628; border-radius: 2px; margin-top: 6px;
+    overflow: hidden; border: 1px solid rgba(124,58,237,0.3);
+  }
+  .mc-bossbar-fill {
+    height: 100%; background: var(--purple-500); border-radius: 2px;
+    animation: bossbarAnim 4s linear infinite;
+  }
+  @keyframes bossbarAnim { 0%{width:100%} 100%{width:0%} }
+  .bossbar-switcher { display: flex; gap: 8px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+  .bossbar-btn {
+    background: rgba(124,58,237,0.1); border: 1px solid var(--dark-border2);
+    color: var(--purple-300); padding: 5px 14px; border-radius: 6px;
+    font-size: 12px; cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+  }
+  .bossbar-btn.active { background: var(--purple-500); color: white; border-color: var(--purple-500); }
+
+  /* ── GUI EDITOR ── */
+  .gui-editor {
+    background: var(--dark-card); border: 1px solid var(--dark-border);
+    border-radius: 20px; overflow: hidden; margin-top: 48px;
+  }
+  .gui-editor-header {
+    background: var(--dark-card2); border-bottom: 1px solid var(--dark-border);
+    padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px;
+  }
+  .gui-editor-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; }
+  .gui-editor-tabs { display: flex; gap: 6px; }
+  .gui-tab {
+    padding: 6px 14px; border-radius: 6px; font-size: 13px; cursor: pointer;
+    border: 1px solid var(--dark-border); color: var(--text-secondary);
+    background: transparent; transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+  }
+  .gui-tab.active { background: var(--purple-500); color: white; border-color: var(--purple-500); }
+  .gui-editor-body { display: grid; grid-template-columns: 1fr 340px; }
+  .gui-preview { padding: 24px; border-right: 1px solid var(--dark-border); }
+  .gui-controls { padding: 24px; }
+  .mc-inventory {
+    background: #2a2133;
+    border: 3px solid #8b5cf6;
+    border-radius: 4px;
+    padding: 12px;
+    font-family: 'Space Mono', monospace;
+    max-width: 100%;
+  }
+  .mc-inv-title {
+    font-size: 12px; color: #d4c8ff; padding: 4px 6px 10px;
+    border-bottom: 2px solid rgba(139,92,246,0.4); margin-bottom: 10px;
+  }
+  .mc-inv-grid {
+    display: grid; gap: 2px;
+  }
+  .mc-inv-grid.cols-9 { grid-template-columns: repeat(9, 1fr); }
+  .mc-inv-grid.cols-6 { grid-template-columns: repeat(6, 1fr); }
+  .mc-slot {
+    width: 100%; aspect-ratio: 1;
+    background: #1a1326;
+    border: 1px solid #3d2f5e;
+    border-radius: 2px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; cursor: pointer; transition: all 0.15s;
+    position: relative; min-width: 0;
+  }
+  .mc-slot:hover { border-color: #8b5cf6; background: #241a36; }
+  .mc-slot.filler { background: #251c38; font-size: 10px; cursor: default; }
+  .mc-slot.highlighted { border-color: #f59e0b; background: rgba(245,158,11,0.1); }
+  .mc-slot.selected { border-color: #8b5cf6; box-shadow: 0 0 0 2px rgba(139,92,246,0.5); }
+  .slot-count {
+    position: absolute; bottom: 1px; right: 2px;
+    font-size: 8px; color: #fff; font-family: 'Space Mono', monospace;
+    text-shadow: 1px 1px 0 #000;
+  }
+
+  /* GUI Controls */
+  .ctrl-section { margin-bottom: 20px; }
+  .ctrl-label {
+    font-size: 11px; font-weight: 600; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; display: block;
+  }
+  .ctrl-group { display: flex; flex-direction: column; gap: 8px; }
+  .ctrl-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .ctrl-name { font-size: 13px; color: var(--text-secondary); }
+  .ctrl-input {
+    background: var(--dark-bg); border: 1px solid var(--dark-border2);
+    color: var(--text-primary); padding: 5px 10px; border-radius: 6px;
+    font-size: 12px; font-family: 'Space Mono', monospace; width: 130px;
+    transition: border-color 0.2s;
+  }
+  .ctrl-input:focus { outline: none; border-color: var(--purple-400); }
+  .ctrl-select {
+    background: var(--dark-bg); border: 1px solid var(--dark-border2);
+    color: var(--text-primary); padding: 5px 10px; border-radius: 6px;
+    font-size: 12px; width: 130px; cursor: pointer;
+  }
+  .ctrl-toggle {
+    width: 36px; height: 20px; background: var(--dark-border);
+    border-radius: 10px; cursor: pointer; position: relative; transition: all 0.2s;
+    border: none; flex-shrink: 0;
+  }
+  .ctrl-toggle::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--text-muted); transition: all 0.2s;
+  }
+  .ctrl-toggle.on { background: var(--purple-500); }
+  .ctrl-toggle.on::after { left: 18px; background: white; }
+
+  .save-btn {
+    width: 100%; background: var(--purple-500); color: white; border: none;
+    padding: 10px; border-radius: 8px; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+    margin-top: 8px;
+  }
+  .save-btn:hover { background: var(--purple-400); }
+
+  /* ── PERFORMANCE SECTION ── */
+  .perf-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-top: 32px; }
+  .perf-card {
+    background: var(--dark-card); border: 1px solid var(--dark-border);
+    border-radius: 14px; padding: 24px;
+  }
+  .perf-val {
+    font-family: 'Space Mono', monospace; font-size: 28px; font-weight: 700;
+    color: var(--green); display: block; margin-bottom: 4px;
+  }
+  .perf-card p { color: var(--text-secondary); font-size: 13px; }
+
+  /* ── THANK YOU DEMO ── */
+  .thankyou-demo {
+    background: var(--dark-card2); border: 1px solid var(--dark-border);
+    border-radius: 12px; padding: 20px;
+    font-family: 'Space Mono', monospace; font-size: 12px;
+  }
+  .mc-chat { display: flex; flex-direction: column; gap: 4px; }
+  .mc-msg { padding: 3px 0; display: flex; align-items: flex-start; gap: 8px; }
+  .mc-msg-system { color: #fcd34d; }
+  .mc-msg-player { color: #d4c8ff; }
+  .mc-msg-info { color: #6ee7b7; }
+  .mc-msg-thanks { color: #f0abfc; }
+  .mc-name { color: #a78bfa; font-weight: 700; }
+  .mc-op { background: #7c3aed; padding: 0 4px; border-radius: 2px; color: white; font-size: 10px; }
+
+  /* ── JOIN NOTIF ── */
+  .join-notif-demo {
+    background: linear-gradient(135deg, rgba(124,58,237,0.1), rgba(109,40,217,0.05));
+    border: 1px solid var(--dark-border2);
+    border-radius: 12px; padding: 20px; margin-top: 20px;
+    font-family: 'Space Mono', monospace; font-size: 12px;
+  }
+
+  /* ── BOOST TYPE CARDS ── */
+  .boost-types { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-top: 32px; }
+  .boost-type-card {
+    background: var(--dark-card); border: 1px solid var(--dark-border);
+    border-radius: 12px; padding: 20px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .boost-type-icon {
+    width: 40px; height: 40px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
+  }
+  .boost-type-card h4 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; margin-bottom: 2px; }
+  .boost-type-card p { color: var(--text-muted); font-size: 12px; }
+
+  /* ── COMMANDS TABLE ── */
+  .cmd-table { width: 100%; border-collapse: collapse; margin-top: 32px; }
+  .cmd-table th {
+    text-align: left; padding: 10px 16px; font-size: 12px; font-weight: 600;
+    color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em;
+    border-bottom: 1px solid var(--dark-border);
+  }
+  .cmd-table td { padding: 12px 16px; border-bottom: 1px solid rgba(124,58,237,0.06); font-size: 14px; }
+  .cmd-table tr:hover td { background: rgba(124,58,237,0.04); }
+  .cmd-code {
+    font-family: 'Space Mono', monospace; font-size: 12px;
+    background: rgba(124,58,237,0.12); color: var(--purple-300);
+    padding: 3px 8px; border-radius: 5px; white-space: nowrap;
+  }
+  .cmd-desc { color: var(--text-secondary); }
+  .cmd-perm { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--text-muted); }
+
+  /* ── DIVIDER ── */
+  .divider { height: 1px; background: var(--dark-border); margin: 0; }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 60px 0 40px;
+    border-top: 1px solid var(--dark-border);
+  }
+  .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 40px; }
+  .footer-brand p { color: var(--text-muted); font-size: 14px; margin-top: 12px; max-width: 280px; line-height: 1.6; }
+  .footer-col h4 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; margin-bottom: 16px; }
+  .footer-col ul { list-style: none; }
+  .footer-col ul li { margin-bottom: 10px; }
+  .footer-col ul li a { color: var(--text-muted); font-size: 14px; text-decoration: none; transition: color 0.2s; }
+  .footer-col ul li a:hover { color: var(--purple-300); }
+  .footer-bottom {
+    margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--dark-border);
+    display: flex; justify-content: space-between; align-items: center;
+    color: var(--text-muted); font-size: 13px;
+  }
+  .version-chip {
+    background: rgba(124,58,237,0.15); border: 1px solid var(--dark-border2);
+    color: var(--purple-300); padding: 3px 10px; border-radius: 100px; font-size: 12px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .feature-grid, .perf-grid, .boost-types { grid-template-columns: 1fr 1fr; }
+    .gui-editor-body { grid-template-columns: 1fr; }
+    .gui-controls { border-top: 1px solid var(--dark-border); }
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+    .feature-wide { grid-column: span 1; }
+    nav .nav-links { display: none; }
+  }
+  @media (max-width: 600px) {
+    .feature-grid, .perf-grid, .boost-types { grid-template-columns: 1fr; }
+    .stat-bar { grid-template-columns: 1fr 1fr; }
+    .footer-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--dark-bg); }
+  ::-webkit-scrollbar-thumb { background: var(--purple-700); border-radius: 3px; }
+
+  /* ── TOOLTIP ── */
+  .tooltip-wrap { position: relative; display: inline-block; }
+  .tooltip-wrap:hover .tooltip-box { opacity: 1; pointer-events: auto; transform: translateY(0); }
+  .tooltip-box {
+    position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%) translateY(4px);
+    background: #1a1628; border: 1px solid var(--dark-border2); color: var(--text-primary);
+    padding: 6px 10px; border-radius: 7px; font-size: 11px; white-space: nowrap;
+    opacity: 0; pointer-events: none; transition: all 0.15s; z-index: 10;
+  }
+
+  /* Syntax highlight for YAML preview */
+  .yaml-key { color: #f0abfc; }
+  .yaml-val { color: #86efac; }
+  .yaml-comment { color: #6b7280; font-style: italic; }
+  .yaml-bool { color: #fbbf24; }
+  pre.yaml-block {
+    background: var(--dark-bg); border: 1px solid var(--dark-border);
+    border-radius: 10px; padding: 16px; font-family: 'Space Mono', monospace;
+    font-size: 11px; line-height: 1.8; overflow-x: auto;
+    color: var(--text-secondary); white-space: pre;
+  }
+
+  /* Notification demo */
+  .notif-box {
+    background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.25);
+    border-left: 3px solid var(--purple-500);
+    border-radius: 8px; padding: 14px 18px; margin-top: 12px;
+    font-family: 'Space Mono', monospace; font-size: 12px;
+  }
+  .notif-box .notif-header { color: var(--purple-300); font-weight: 700; margin-bottom: 6px; }
+  .notif-box .notif-line { color: var(--text-secondary); margin: 2px 0; }
+  .notif-active { color: var(--green); }
+
+
+/* ── MODERN UI ENHANCEMENTS ── */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background:
+    radial-gradient(circle at top right, rgba(124,58,237,0.14), transparent 30%),
+    radial-gradient(circle at bottom left, rgba(6,182,212,0.10), transparent 30%),
+    var(--dark-bg);
+}
+
+nav {
+  height: 72px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+}
+
+.hero {
+  padding-top: 180px;
+  padding-bottom: 120px;
+}
+
+.hero h1 {
+  background: linear-gradient(135deg, #ffffff 0%, #c4b5fd 45%, #7dd3fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-sub {
+  font-size: 19px;
+}
+
+.feature-card,
+.perf-card,
+.boost-type-card,
+.gui-editor,
+.bossbar-demo,
+.thankyou-demo,
+.join-notif-demo {
+  backdrop-filter: blur(16px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+}
+
+.feature-card:hover,
+.boost-type-card:hover,
+.perf-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 50px rgba(124,58,237,0.18);
+}
+
+.btn-primary,
+.btn-secondary,
+.nav-cta,
+.save-btn {
+  transition: all .25s ease;
+}
+
+.btn-primary:hover,
+.nav-cta:hover,
+.save-btn:hover {
+  transform: translateY(-3px) scale(1.01);
+}
+
+.feature-grid {
+  gap: 22px;
+}
+
+section {
+  padding: 100px 0;
+}
+
+.support-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(240px,1fr));
+  gap: 20px;
+  margin-top: 40px;
+}
+
+.support-card {
+  background: linear-gradient(180deg, rgba(19,16,30,0.95), rgba(26,22,40,0.85));
+  border: 1px solid var(--dark-border);
+  border-radius: 22px;
+  padding: 28px;
+  transition: all .25s ease;
+}
+
+.support-card:hover {
+  border-color: var(--purple-400);
+  transform: translateY(-4px);
+}
+
+.support-card h3 {
+  font-family: 'Syne', sans-serif;
+  margin: 16px 0 10px;
+  font-size: 18px;
+}
+
+.support-card p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.support-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  background: rgba(124,58,237,0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  border: 1px solid rgba(124,58,237,0.25);
+}
+
+.support-status {
+  margin-top: 40px;
+  background: linear-gradient(135deg, rgba(124,58,237,0.14), rgba(6,182,212,0.08));
+  border: 1px solid var(--dark-border2);
+  border-radius: 20px;
+  padding: 28px;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: rgba(34,197,94,0.12);
+  color: #86efac;
+  border: 1px solid rgba(34,197,94,0.25);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.modern-badge {
+  background: linear-gradient(135deg, #7c3aed, #06b6d4);
+  color: white;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    GUI<span style="color:var(--purple-400)">Boost</span>
+    <span class="logo-badge">v2.0.0</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#editor">GUI Editor</a></li>
+    <li><a href="#boosts">Boost Types</a></li>
+    <li><a href="#commands">Commands</a></li>
+    <li><a href="#performance">Performance</a></li>
+    <li><a href="known-issues.html">Support</a></li>
+    <li><a href="changelog.html">Changelog</a></li>
+  </ul>
+  <button class="nav-cta">⬇ Download</button>
+</nav>
+
+<!-- HERO -->
+<div class="container">
+  <div class="hero">
+    <div class="hero-tag">Premium Minecraft Plugin · Spigot &amp; Paper</div>
+    <h1>The Only Booster<br>Plugin You'll <span>Ever Need</span></h1>
+    <p class="hero-sub">Global &amp; personal server boosters with a visual GUI editor, Smart BossBar, join notifications, async performance, and a developer API — all in one lightweight plugin.</p>
+    <div class="hero-actions">
+      <button class="btn-primary">⬇ Download GUIBoost</button>
+      <button class="btn-secondary">📖 Documentation</button>
+    </div>
+
+    <!-- STATS -->
+    <div class="stat-bar">
+      <div class="stat-item">
+        <span class="stat-num">30+</span>
+        <div class="stat-lbl">Supported plugins</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">6</span>
+        <div class="stat-lbl">Built-in boost types</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">100%</span>
+        <div class="stat-lbl">Async task handling</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">∞</span>
+        <div class="stat-lbl">Custom boost configs</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="container">
+    <div class="section-tag">Features</div>
+    <h2 class="section-title">Everything you need,<br><span>nothing you don't</span></h2>
+    <p class="section-sub">GUIBoost is lean by design. Every feature earns its place — no bloat, no lag, no YAML headaches.</p>
+
+    <div class="feature-grid">
+
+      <!-- Smart BossBar -->
+      <div class="feature-card feature-wide">
+        <span class="badge badge-new">NEW</span>
+        <div class="feature-icon">🎯</div>
+        <h3>Smart BossBar</h3>
+        <p>Automatically rotates through all active boosts, showing each one in sequence on a single BossBar. Players always see what's running — no cluttered UI, no missed boosts.</p>
+        <div class="bossbar-demo" style="margin-top:16px;background:var(--dark-bg);border-radius:10px;padding:20px;">
+          <div class="mc-bossbar" id="bossbarDisplay">
+            <div id="bossbarText">⚡ ᴇxᴘᴇʀɪᴇɴᴄᴇ ʙᴏᴏꜱᴛ ×2.0 · 12m 30s</div>
+            <div class="mc-bossbar-bar"><div class="mc-bossbar-fill" id="bossbarFill" style="width:75%"></div></div>
+          </div>
+          <div class="bossbar-switcher">
+            <button class="bossbar-btn active" onclick="switchBossbar(this,'⚡ ᴇxᴘ ʙᴏᴏꜱᴛ ×2.0','#a259ff',75)">XP</button>
+            <button class="bossbar-btn" onclick="switchBossbar(this,'💰 ᴇᴄᴏɴᴏᴍʏ ʙᴏᴏꜱᴛ ×1.5','#f5c542',55)">Economy</button>
+            <button class="bossbar-btn" onclick="switchBossbar(this,'🌾 ᴄʀᴏᴘ ʙᴏᴏꜱᴛ ×3.0','#78f542',90)">Crop</button>
+            <button class="bossbar-btn" onclick="switchBossbar(this,'🎣 ꜰɪꜱʜ ʙᴏᴏꜱᴛ ×2.5','#42c5f5',40)">Fish</button>
+          </div>
+          <p style="font-size:12px;color:var(--text-muted);text-align:center;margin-top:8px;">Click to preview — Smart BossBar auto-cycles through all active boosts</p>
+        </div>
+      </div>
+
+      <!-- Join Notifications -->
+      <div class="feature-card">
+        <span class="badge badge-new">NEW</span>
+        <div class="feature-icon">🔔</div>
+        <h3>Join Notifications</h3>
+        <p>Players who log in mid-boost instantly see what's active. Never let a boost go unnoticed — everyone benefits from day one.</p>
+        <div class="join-notif-demo" style="margin-top:14px;">
+          <div class="notif-header">▶ Connecting to server...</div>
+          <div class="notif-line">──────────────────────</div>
+          <div class="notif-line notif-active">● 2 active boosts right now!</div>
+          <div class="notif-line">⚡ XP ×2.0 — <span style="color:#fcd34d">12m 30s left</span></div>
+          <div class="notif-line">💰 Economy ×1.5 — <span style="color:#fcd34d">45m left</span></div>
+          <div class="notif-line">──────────────────────</div>
+          <div class="notif-line" style="color:var(--purple-300)">Type /guib to open your booster menu</div>
+        </div>
+      </div>
+
+      <!-- Thank You Button -->
+      <div class="feature-card">
+        <span class="badge badge-new">NEW</span>
+        <div class="feature-icon">💜</div>
+        <h3>Thank You Button</h3>
+        <p>Players can thank whoever activated a booster with a single click. Builds community, motivates future activations, and shows appreciation in global chat.</p>
+        <div class="thankyou-demo" style="margin-top:14px;">
+          <div class="mc-chat">
+            <div class="mc-msg mc-msg-system">✦ <span class="mc-name">Steve</span> activated an XP Boost ×2!</div>
+            <div class="mc-msg mc-msg-info">  [Click to Thank Steve] 💜</div>
+            <div class="mc-msg mc-msg-thanks">💜 <span class="mc-name">Alex</span>: Thanks for the boost Steve!</div>
+            <div class="mc-msg mc-msg-thanks">💜 <span class="mc-name">Notch</span>: Thanks Steve! 🙏</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GUI Editor -->
+      <div class="feature-card">
+        <span class="badge badge-pro">CORE</span>
+        <div class="feature-icon">🎨</div>
+        <h3>Visual GUI Editor</h3>
+        <p>Edit every inventory slot, title, filler material, and item position directly in-game or via the web editor — zero YAML knowledge needed.</p>
+      </div>
+
+      <!-- Async Performance -->
+      <div class="feature-card">
+        <span class="badge badge-new">NEW</span>
+        <div class="feature-icon">⚡</div>
+        <h3>Great Performance</h3>
+        <p>Every heavy task runs asynchronously — database I/O, leaderboard updates, boost history, Discord webhooks — so your TPS stays rock-solid.</p>
+      </div>
+
+      <!-- Booster Inventory -->
+      <div class="feature-card">
+        <span class="badge badge-pro">CORE</span>
+        <div class="feature-icon">🎒</div>
+        <h3>Booster Inventory</h3>
+        <p>Each player holds their own collection of boosters — personal, team, or global — stored safely across server restarts.</p>
+      </div>
+
+      <!-- Personal + Team scopes -->
+      <div class="feature-card">
+        <span class="badge badge-pro">CORE</span>
+        <div class="feature-icon">👥</div>
+        <h3>3 Boost Scopes</h3>
+        <p>Global boosters benefit everyone. Personal boosters are private. Team boosters integrate with DonutTeams — one system, all scopes.</p>
+      </div>
+
+      <!-- Discord Webhooks -->
+      <div class="feature-card">
+        <span class="badge badge-pro">CORE</span>
+        <div class="feature-icon">🔗</div>
+        <h3>Discord Webhooks</h3>
+        <p>Automatically post rich embeds to your Discord server whenever a boost starts or ends. Keeps your community looped in 24/7.</p>
+      </div>
+
+      <!-- Developer API -->
+      <div class="feature-card">
+        <span class="badge badge-pro">API</span>
+        <div class="feature-icon">🛠</div>
+        <h3>Developer API</h3>
+        <p>Full Java API with cancellable events, boost multiplier overrides, custom types, and PlaceholderAPI integration for HUDs and scoreboards.</p>
+      </div>
+
+      <!-- Smart AI Scheduler -->
+      <div class="feature-card feature-wide">
+        <span class="badge badge-pro">SCHEDULER</span>
+        <div class="feature-icon">🤖</div>
+        <h3>Smart AI Scheduler</h3>
+        <p>Learns your server's peak hours from engagement data and suggests — or auto-schedules — boosts for maximum impact. Configurable via <code style="font-family:monospace;background:rgba(124,58,237,0.15);padding:1px 5px;border-radius:3px;font-size:12px;">scheduling.yml</code> with full cron support and a live in-game dashboard.</p>
+      </div>
+
+      <!-- Milestones -->
+      <div class="feature-card">
+        <span class="badge badge-pro">v1.0</span>
+        <div class="feature-icon">🏆</div>
+        <h3>Milestones &amp; Achievements</h3>
+        <p>Reward players for hitting boost activation milestones. Configurable LuckPerms hooks grant groups on achievement.</p>
+      </div>
+
+      <!-- Fraud Detection -->
+      <div class="feature-card">
+        <span class="badge badge-pro">v1.0</span>
+        <div class="feature-icon">🛡</div>
+        <h3>Fraud Detection</h3>
+        <p>Built-in abuse detection flags suspicious activation patterns, rate-limits exploiters, and logs events for admin review.</p>
+      </div>
+
+      <!-- Negative Boosters -->
+      <div class="feature-card">
+        <span class="badge badge-pro">CORE</span>
+        <div class="feature-icon">⬇</div>
+        <h3>Negative Boosters</h3>
+        <p>Apply debuff multipliers (below 1×) as a challenge or punishment mechanic — fully configurable per boost type.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- GUI EDITOR -->
+<section id="editor">
+  <div class="container">
+    <div class="section-tag">Visual Editor</div>
+    <h2 class="section-title">Edit GUIs without<br><span>touching a YAML file</span></h2>
+    <p class="section-sub">The built-in GUI editor lets admins rearrange slots, change titles, swap icons, and configure every detail — live, in-browser or in-game.</p>
+
+    <div class="gui-editor">
+      <div class="gui-editor-header">
+        <div class="gui-editor-title">🎨 GUIBoost Visual Editor</div>
+        <div class="gui-editor-tabs">
+          <button class="gui-tab active" onclick="setGuiTab(this,'main')">Main Menu</button>
+          <button class="gui-tab" onclick="setGuiTab(this,'active')">Active Boosts</button>
+          <button class="gui-tab" onclick="setGuiTab(this,'inventory')">Inventory</button>
+          <button class="gui-tab" onclick="setGuiTab(this,'admin')">Admin Panel</button>
+        </div>
+      </div>
+
+      <div class="gui-editor-body">
+        <!-- PREVIEW -->
+        <div class="gui-preview">
+          <div id="guiPreviewMain">
+            <div class="mc-inventory">
+              <div class="mc-inv-title" id="guiTitleDisplay">✦ GUIBoost Menu</div>
+              <div class="mc-inv-grid cols-9" id="guiGrid">
+                <!-- Generated by JS -->
+              </div>
+            </div>
+            <p style="font-size:11px;color:var(--text-muted);margin-top:10px;text-align:center">Click any slot to assign a function. Drag items to rearrange.</p>
+          </div>
+        </div>
+
+        <!-- CONTROLS -->
+        <div class="gui-controls">
+          <div class="ctrl-section">
+            <span class="ctrl-label">GUI Title</span>
+            <div class="ctrl-row">
+              <input class="ctrl-input" id="guiTitleInput" value="✦ GUIBoost Menu" style="width:100%" oninput="document.getElementById('guiTitleDisplay').textContent=this.value">
+            </div>
+          </div>
+
+          <div class="ctrl-section">
+            <span class="ctrl-label">Size (rows)</span>
+            <div class="ctrl-row">
+              <select class="ctrl-select" onchange="updateGuiSize(this.value)" style="width:100%">
+                <option value="3" selected>3 rows (27 slots)</option>
+                <option value="4">4 rows (36 slots)</option>
+                <option value="5">5 rows (45 slots)</option>
+                <option value="6">6 rows (54 slots)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="ctrl-section">
+            <span class="ctrl-label">Filler Material</span>
+            <div class="ctrl-row">
+              <select class="ctrl-select" id="fillerSelect" onchange="updateFiller(this.value)" style="width:100%">
+                <option value="BLACK_STAINED_GLASS_PANE">Black Glass Pane</option>
+                <option value="PURPLE_STAINED_GLASS_PANE" selected>Purple Glass Pane</option>
+                <option value="GRAY_STAINED_GLASS_PANE">Gray Glass Pane</option>
+                <option value="AIR">None (Air)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="ctrl-section">
+            <span class="ctrl-label">Slot Assignment</span>
+            <div class="ctrl-group">
+              <div class="ctrl-row">
+                <span class="ctrl-name">Player Head</span>
+                <input class="ctrl-input" id="slotHead" type="number" value="4" min="0" max="53" style="width:60px" onchange="refreshGrid()">
+              </div>
+              <div class="ctrl-row">
+                <span class="ctrl-name">Active Boosts Btn</span>
+                <input class="ctrl-input" id="slotActive" type="number" value="11" min="0" max="53" style="width:60px" onchange="refreshGrid()">
+              </div>
+              <div class="ctrl-row">
+                <span class="ctrl-name">Inventory Btn</span>
+                <input class="ctrl-input" id="slotInv" type="number" value="13" min="0" max="53" style="width:60px" onchange="refreshGrid()">
+              </div>
+              <div class="ctrl-row">
+                <span class="ctrl-name">Leaderboard Btn</span>
+                <input class="ctrl-input" id="slotLb" type="number" value="15" min="0" max="53" style="width:60px" onchange="refreshGrid()">
+              </div>
+            </div>
+          </div>
+
+          <div class="ctrl-section">
+            <span class="ctrl-label">Options</span>
+            <div class="ctrl-group">
+              <div class="ctrl-row">
+                <span class="ctrl-name">BossBar enabled</span>
+                <button class="ctrl-toggle on" id="toggleBossbar" onclick="toggleOption(this)"></button>
+              </div>
+              <div class="ctrl-row">
+                <span class="ctrl-name">Sounds enabled</span>
+                <button class="ctrl-toggle on" id="toggleSounds" onclick="toggleOption(this)"></button>
+              </div>
+              <div class="ctrl-row">
+                <span class="ctrl-name">Join notifications</span>
+                <button class="ctrl-toggle on" id="toggleJoinNotif" onclick="toggleOption(this)"></button>
+              </div>
+              <div class="ctrl-row">
+                <span class="ctrl-name">Thank you button</span>
+                <button class="ctrl-toggle on" id="toggleThanks" onclick="toggleOption(this)"></button>
+              </div>
+              <div class="ctrl-row">
+                <span class="ctrl-name">Smart BossBar cycle</span>
+                <button class="ctrl-toggle on" id="toggleSmartBar" onclick="toggleOption(this)"></button>
+              </div>
+            </div>
+          </div>
+
+          <button class="save-btn" onclick="saveConfig()">💾 Save Config to YAML</button>
+
+          <div id="savedMsg" style="display:none;margin-top:8px;padding:8px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:6px;font-size:12px;color:#86efac;text-align:center;">
+            ✓ Saved! Config written to gui/main-menu.yml
+          </div>
+        </div>
+      </div>
+
+      <!-- YAML PREVIEW -->
+      <div style="border-top:1px solid var(--dark-border);padding:20px 24px;">
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;">📄 Live YAML Preview</div>
+        <pre class="yaml-block" id="yamlPreview"></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PERFORMANCE -->
+<section id="performance">
+  <div class="container">
+    <div class="section-tag">Performance</div>
+    <h2 class="section-title">Built for <span>heavy servers</span></h2>
+    <p class="section-sub">Every slow operation runs off the main thread. GUIBoost never blocks your TPS — even with thousands of players and hundreds of active boosters.</p>
+
+    <div class="perf-grid">
+      <div class="perf-card">
+        <span class="perf-val">&lt;0.1ms</span>
+        <p>Average boost tick overhead on the main thread</p>
+      </div>
+      <div class="perf-card">
+        <span class="perf-val">100%</span>
+        <p>Database operations run fully asynchronously</p>
+      </div>
+      <div class="perf-card">
+        <span class="perf-val">0 leaks</span>
+        <p>All BossBar, scheduler, and task handles cancelled cleanly on /reload</p>
+      </div>
+    </div>
+
+    <div style="margin-top:24px;background:var(--dark-card);border:1px solid var(--dark-border);border-radius:14px;padding:28px;display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+      <div>
+        <h3 style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:12px;">Async by default</h3>
+        <ul style="color:var(--text-secondary);font-size:14px;list-style:none;display:flex;flex-direction:column;gap:8px;">
+          <li>✓ SQLite &amp; MySQL I/O off main thread</li>
+          <li>✓ Leaderboard computation async</li>
+          <li>✓ Discord webhook HTTP calls async</li>
+          <li>✓ Boost history writes async</li>
+          <li>✓ Player data loading async on join</li>
+          <li>✓ Scheduler cron evaluation async</li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:12px;">Main thread only does</h3>
+        <ul style="color:var(--text-secondary);font-size:14px;list-style:none;display:flex;flex-direction:column;gap:8px;">
+          <li>→ Boost multiplier application</li>
+          <li>→ GUI opens &amp; closes</li>
+          <li>→ BossBar title updates (once/sec)</li>
+          <li>→ Chat messages</li>
+          <li>→ Sound triggers</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- BOOST TYPES -->
+<section id="boosts">
+  <div class="container">
+    <div class="section-tag">Boost Types</div>
+    <h2 class="section-title">Six built-in types,<br><span>unlimited custom ones</span></h2>
+    <p class="section-sub">All built-in boost types are fully configurable — rename them, change their icons, set multiplier caps, enable or disable any of them individually.</p>
+
+    <div class="boost-types">
+      <div class="boost-type-card">
+        <div class="boost-type-icon" style="background:rgba(162,89,255,0.15);border:1px solid rgba(162,89,255,0.3);">⚡</div>
+        <div>
+          <h4 style="color:#c084fc">Experience Boost</h4>
+          <p>Multiply all XP gains from mob kills, mining, and more</p>
+        </div>
+      </div>
+      <div class="boost-type-card">
+        <div class="boost-type-icon" style="background:rgba(245,197,66,0.15);border:1px solid rgba(245,197,66,0.3);">💰</div>
+        <div>
+          <h4 style="color:#fcd34d">Economy Boost</h4>
+          <p>Multiply Vault / CoinsEngine currency earnings</p>
+        </div>
+      </div>
+      <div class="boost-type-card">
+        <div class="boost-type-icon" style="background:rgba(66,245,138,0.15);border:1px solid rgba(66,245,138,0.3);">🍃</div>
+        <div>
+          <h4 style="color:#86efac">Drop Boost</h4>
+          <p>Increase item drop rates from mobs and blocks</p>
+        </div>
+      </div>
+      <div class="boost-type-card">
+        <div class="boost-type-icon" style="background:rgba(120,245,66,0.15);border:1px solid rgba(120,245,66,0.3);">🌾</div>
+        <div>
+          <h4 style="color:#a3e635">Crop Boost</h4>
+          <p>Multiplies harvested crop yield for farmers</p>
+        </div>
+      </div>
+      <div class="boost-type-card">
+        <div class="boost-type-icon" style="background:rgba(245,66,66,0.15);border:1px solid rgba(245,66,66,0.3);">⚔</div>
+        <div>
+          <h4 style="color:#fca5a5">Damage Boost</h4>
+          <p>Multiply outgoing player &amp; weapon damage</p>
+        </div>
+      </div>
+      <div class="boost-type-card">
+        <div class="boost-type-icon" style="background:rgba(66,197,245,0.15);border:1px solid rgba(66,197,245,0.3);">🎣</div>
+        <div>
+          <h4 style="color:#67e8f9">Fish Boost</h4>
+          <p>Increase fishing loot quality and quantity</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:24px;background:linear-gradient(135deg,rgba(124,58,237,0.1),rgba(109,40,217,0.05));border:1px solid var(--dark-border2);border-radius:14px;padding:24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+      <div style="font-size:28px">🔧</div>
+      <div>
+        <h3 style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:4px;">Custom Boost Types</h3>
+        <p style="color:var(--text-secondary);font-size:14px;">Define your own boost types in <code style="font-family:monospace;background:rgba(124,58,237,0.15);padding:1px 5px;border-radius:3px;font-size:12px;">boosts.yml</code> — custom icons, display names, multiplier ranges, and event hooks via the Developer API. No limit on how many you create.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- COMMANDS -->
+<section id="commands">
+  <div class="container">
+    <div class="section-tag">Commands & Permissions</div>
+    <h2 class="section-title">Clean commands,<br><span>granular permissions</span></h2>
+
+    <table class="cmd-table">
+      <thead>
+        <tr>
+          <th>Command</th>
+          <th>Description</th>
+          <th>Permission</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="cmd-code">/guib</span></td><td class="cmd-desc">Open your personal booster menu</td><td class="cmd-perm">guiboost.use</td></tr>
+        <tr><td><span class="cmd-code">/guib inventory</span></td><td class="cmd-desc">View your booster inventory</td><td class="cmd-perm">guiboost.use</td></tr>
+        <tr><td><span class="cmd-code">/guib active</span></td><td class="cmd-desc">See all active server boosts</td><td class="cmd-perm">guiboost.use</td></tr>
+        <tr><td><span class="cmd-code">/guib history</span></td><td class="cmd-desc">View your personal boost history</td><td class="cmd-perm">guiboost.use</td></tr>
+        <tr><td><span class="cmd-code">/guib leaderboard</span></td><td class="cmd-desc">Open the boost leaderboard</td><td class="cmd-perm">guiboost.use</td></tr>
+        <tr><td><span class="cmd-code">/gba</span></td><td class="cmd-desc">Open the admin panel GUI</td><td class="cmd-perm">guiboost.admin</td></tr>
+        <tr><td><span class="cmd-code">/gba reload</span></td><td class="cmd-desc">Reload all config files</td><td class="cmd-perm">guiboost.admin</td></tr>
+        <tr><td><span class="cmd-code">/gba give &lt;player&gt; &lt;type&gt;</span></td><td class="cmd-desc">Give a player a booster item</td><td class="cmd-perm">guiboost.admin.give</td></tr>
+        <tr><td><span class="cmd-code">/gba start &lt;type&gt; &lt;mult&gt; &lt;time&gt;</span></td><td class="cmd-desc">Force-start a boost immediately</td><td class="cmd-perm">guiboost.admin.start</td></tr>
+        <tr><td><span class="cmd-code">/gba stop &lt;type&gt;</span></td><td class="cmd-desc">Stop a running boost</td><td class="cmd-perm">guiboost.admin.stop</td></tr>
+        <tr><td><span class="cmd-code">/gba stopall</span></td><td class="cmd-desc">Stop all active boosts at once</td><td class="cmd-perm">guiboost.admin.stop</td></tr>
+        <tr><td><span class="cmd-code">/gba preview &lt;type&gt; &lt;mult&gt; &lt;secs&gt;</span></td><td class="cmd-desc">Dry-run a boost without activating it</td><td class="cmd-perm">guiboost.admin</td></tr>
+        <tr><td><span class="cmd-code">/gba scheduling</span></td><td class="cmd-desc">View the Smart AI scheduling dashboard</td><td class="cmd-perm">guiboost.admin</td></tr>
+        <tr><td><span class="cmd-code">/gba editor</span></td><td class="cmd-desc">Open the in-game GUI editor</td><td class="cmd-perm">guiboost.admin.editor</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+
+
+<div class="divider"></div>
+
+<!-- SUPPORT -->
+<section id="support">
+  <div class="container">
+    <div class="section-tag">Support</div>
+    <h2 class="section-title">Fast help for<br><span>every server owner</span></h2>
+    <p class="section-sub">
+      Get setup help, report bugs, request features, or contact the development team directly.
+      Premium response times and a clean support workflow built for modern communities.
+    </p>
+
+    <div class="support-grid">
+      <div class="support-card">
+        <div class="support-icon">💬</div>
+        <h3>Discord Support</h3>
+        <p>Join the official GUIBoost Discord for live support, setup help, beta builds, and community discussions.</p>
+      </div>
+
+      <div class="support-card">
+        <div class="support-icon">📘</div>
+        <h3>Documentation</h3>
+        <p>Step-by-step setup guides, API references, configuration examples, and troubleshooting articles.</p>
+      </div>
+
+      <div class="support-card">
+        <div class="support-icon">🐞</div>
+        <h3>Bug Reports</h3>
+        <p>Submit bugs with detailed logs and reproduction steps. Track fixes and updates in real time.</p>
+      </div>
+
+      <div class="support-card">
+        <div class="support-icon">🚀</div>
+        <h3>Feature Requests</h3>
+        <p>Suggest new booster mechanics, integrations, UI improvements, and workflow upgrades.</p>
+      </div>
+    </div>
+
+    <div class="support-status">
+      <div>
+        <div class="modern-badge">24/7 Support System</div>
+        <h3 style="font-family:'Syne',sans-serif;font-size:28px;margin-bottom:8px;">
+          Average response time under 15 minutes
+        </h3>
+        <p style="color:var(--text-secondary);max-width:560px;">
+          Our support workflow is optimized for server owners running large communities and custom networks.
+        </p>
+      </div>
+
+      <div class="status-pill">
+        ● All systems operational
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="nav-logo" style="font-size:20px;font-family:'Syne',sans-serif;font-weight:800;">
+          GUI<span style="color:var(--purple-400)">Boost</span>
+          <span class="logo-badge">v2.0.0</span>
+        </div>
+        <p>Premium global &amp; personal server booster system with Smart BossBar, visual GUI editor, async performance, and full developer API.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Plugin</h4>
+        <ul>
+          <li><a href="#">Download</a></li>
+          <li><a href="#">Documentation</a></li>
+          <li><a href="#">Changelog</a></li>
+          <li><a href="#">GitHub</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="#">Discord Server</a></li>
+          <li><a href="#">Bug Reports</a></li>
+          <li><a href="#">Feature Requests</a></li>
+          <li><a href="#">API Javadocs</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 GUIBoost. All rights reserved.</span>
+      <span class="version-chip">v2.0.0</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── BOSSBAR DEMO ──────────────────────────────────────────────────────────
+function switchBossbar(btn, text, color, progress) {
+  document.querySelectorAll('.bossbar-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('bossbarText').textContent = text;
+  const fill = document.getElementById('bossbarFill');
+  fill.style.background = color;
+  fill.style.width = progress + '%';
+}
+
+// ── TOGGLE ────────────────────────────────────────────────────────────────
+function toggleOption(btn) {
+  btn.classList.toggle('on');
+  updateYaml();
+}
+
+// ── GUI EDITOR ────────────────────────────────────────────────────────────
+let currentRows = 3;
+let currentFiller = '🟪';
+
+const FILLER_EMOJIS = {
+  'BLACK_STAINED_GLASS_PANE': '⬛',
+  'PURPLE_STAINED_GLASS_PANE': '🟪',
+  'GRAY_STAINED_GLASS_PANE': '🔲',
+  'AIR': ''
+};
+
+const SLOT_DEFS_MAIN = [
+  { id: 'slotHead',   emoji: '👤', label: 'Head' },
+  { id: 'slotActive', emoji: '⚡', label: 'Active' },
+  { id: 'slotInv',    emoji: '🎒', label: 'Inv' },
+  { id: 'slotLb',     emoji: '🏆', label: 'LB' }
+];
+
+function getSlotValue(id) {
+  const el = document.getElementById(id);
+  return el ? parseInt(el.value) : -1;
+}
+
+function refreshGrid() {
+  const totalSlots = currentRows * 9;
+  const grid = document.getElementById('guiGrid');
+  if (!grid) return;
+
+  const slotEmojis = {};
+  SLOT_DEFS_MAIN.forEach(def => {
+    const v = getSlotValue(def.id);
+    if (v >= 0 && v < totalSlots) slotEmojis[v] = def.emoji;
+  });
+
+  let html = '';
+  for (let i = 0; i < totalSlots; i++) {
+    if (slotEmojis[i]) {
+      html += `<div class="mc-slot" title="Slot ${i}">${slotEmojis[i]}</div>`;
+    } else {
+      const fe = FILLER_EMOJIS[currentFiller] || '';
+      html += `<div class="mc-slot filler" title="Slot ${i}">${fe}</div>`;
+    }
+  }
+  grid.innerHTML = html;
+  updateYaml();
+}
+
+function updateGuiSize(rows) {
+  currentRows = parseInt(rows);
+  refreshGrid();
+}
+
+function updateFiller(val) {
+  currentFiller = val;
+  refreshGrid();
+}
+
+function setGuiTab(btn, tab) {
+  document.querySelectorAll('.gui-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  refreshGrid();
+}
+
+function updateYaml() {
+  const title = document.getElementById('guiTitleInput').value;
+  const size = currentRows * 9;
+  const filler = currentFiller;
+  const headSlot = getSlotValue('slotHead');
+  const activeSlot = getSlotValue('slotActive');
+  const invSlot = getSlotValue('slotInv');
+  const lbSlot = getSlotValue('slotLb');
+
+  const bossbar = document.getElementById('toggleBossbar')?.classList.contains('on');
+  const sounds = document.getElementById('toggleSounds')?.classList.contains('on');
+  const joinNotif = document.getElementById('toggleJoinNotif')?.classList.contains('on');
+  const thanks = document.getElementById('toggleThanks')?.classList.contains('on');
+  const smartBar = document.getElementById('toggleSmartBar')?.classList.contains('on');
+
+  const yaml = `<span class="yaml-comment"># gui/main-menu.yml — generated by GUIBoost Visual Editor</span>
+<span class="yaml-key">title:</span> <span class="yaml-val">"${title}"</span>
+<span class="yaml-key">size:</span> <span class="yaml-val">${size}</span>
+<span class="yaml-key">filler:</span> <span class="yaml-val">${filler}</span>
+
+<span class="yaml-key">slots:</span>
+  <span class="yaml-key">player-head:</span> <span class="yaml-val">${headSlot}</span>
+  <span class="yaml-key">active-boosts:</span> <span class="yaml-val">${activeSlot}</span>
+  <span class="yaml-key">booster-inventory:</span> <span class="yaml-val">${invSlot}</span>
+  <span class="yaml-key">leaderboard:</span> <span class="yaml-val">${lbSlot}</span>
+
+<span class="yaml-key">settings:</span>
+  <span class="yaml-key">bossbar-enabled:</span> <span class="yaml-bool">${bossbar}</span>
+  <span class="yaml-key">smart-bossbar-cycle:</span> <span class="yaml-bool">${smartBar}</span>
+  <span class="yaml-key">sounds-enabled:</span> <span class="yaml-bool">${sounds}</span>
+  <span class="yaml-key">join-notifications:</span> <span class="yaml-bool">${joinNotif}</span>
+  <span class="yaml-key">thank-you-button:</span> <span class="yaml-bool">${thanks}</span>`;
+
+  const el = document.getElementById('yamlPreview');
+  if (el) el.innerHTML = yaml;
+}
+
+function saveConfig() {
+  const msg = document.getElementById('savedMsg');
+  msg.style.display = 'block';
+  setTimeout(() => { msg.style.display = 'none'; }, 3000);
+}
+
+// Init
+window.addEventListener('DOMContentLoaded', () => {
+  refreshGrid();
+});
+</script>
+</body>
+</html>
